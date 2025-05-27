@@ -65,30 +65,19 @@
       background: #444;
     }
 
-    .flicker {
-      animation: flicker 1s ease-in-out;
-    }
 
-    @keyframes flicker {
-      0% { opacity: 1; }
-      20% { opacity: 0.2; }
-      40% { opacity: 0.8; }
-      60% { opacity: 0.4; }
-      80% { opacity: 1; }
-      100% { opacity: 1; }
-    }
   </style>
 </head>
 <body>
 
   <div id="off-screen">
-    <button id="power-button">Turn On TV</button>
+    <button id="power-button">Turn On</button>
   </div>
   <div id="player"></div>
 
   <div id="channel-controls">
-    <button class="channel-button" data-channel="1">Channel 1</button>
-    <button class="channel-button" data-channel="2">Channel 2</button>
+    <button class="channel-button" data-channel="1">1</button>
+    <button class="channel-button" data-channel="2">2</button>
   </div>
 
   <script>
@@ -110,7 +99,6 @@
     powerButton.addEventListener('click', () => {
       if (tvOn) return;
       tvOn = true;
-      offScreen.classList.add('flicker');
 
       setTimeout(() => {
         offScreen.style.display = 'none';
