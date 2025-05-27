@@ -43,9 +43,25 @@
       color: #ccc;
     }
 
-    #player {
+    #player-container {
+      position: relative;
       width: 640px;
       height: 360px;
+    }
+
+    #player {
+      width: 100%;
+      height: 100%;
+    }
+
+    #blackout {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      z-index: 2;
       display: none;
     }
 
@@ -100,10 +116,13 @@
 
   <div id="title-block">
     <h1>CABLE</h1>
-    <p>,, of the Kind Blue Observatory</p>
+    <p>of the Kind Blue Observatory</p>
   </div>
 
-  <div id="player"></div>
+  <div id="player-container">
+    <div id="player"></div>
+    <div id="blackout"></div>
+  </div>
 
   <button class="channel-button left active" data-channel="1">Channel 1</button>
   <button id="power-toggle">⏻</button>
@@ -116,6 +135,7 @@
     };
 
     const playerDiv = document.getElementById('player');
+    const blackout = document.getElementById('blackout');
     const channelButtons = document.querySelectorAll('.channel-button');
     const powerToggle = document.getElementById('power-toggle');
 
@@ -127,13 +147,13 @@
     powerToggle.addEventListener('click', () => {
       if (!tvOn) {
         tvOn = true;
-        playerDiv.style.display = 'block';
+        blackout.style.display = 'none';
         if (playerInitialized) {
           syncAndPlayChannel(currentChannel);
         }
       } else {
         tvOn = false;
-        playerDiv.style.display = 'none';
+        blackout.style.display = 'block';
         if (player) {
           player.stopVideo();
         }
