@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KBO Cable</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    #player {
+      width: 640px;
+      height: 360px;
+      display: none;
+    }
+
+    #off-screen {
+      width: 640px;
+      height: 360px;
+      background: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #power-button {
+      font-size: 1.2rem;
+      padding: 1rem 2rem;
+      background: white;
+      color: black;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #channel-controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .channel-button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      background: #333;
+      color: white;
+      border: 1px solid #666;
+      cursor: pointer;
+    }
+
+    .channel-button:hover {
+      background: #444;
+    }
+
+    .flicker {
+      animation: flicker 1s ease-in-out;
+    }
+
+    @keyframes flicker {
+      0% { opacity: 1; }
+      20% { opacity: 0.2; }
+      40% { opacity: 0.8; }
+      60% { opacity: 0.4; }
+      80% { opacity: 1; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="off-screen">
+    <button id="power-button">Turn On TV</button>
+  </div>
+  <div id="player"></div>
+
+  <div id="channel-controls">
+    <button class="channel-button" data-channel="1">Channel 1</button>
+    <button class="channel-button" data-channel="2">Channel 2</button>
+  </div>
+
+  <script>
+    const playlistMap = {
+      1: "PLapU3SOlAXR0bD-UowudCiKf5kAeXPIEz",
+      2: "PLapU3SOlAXR0piDalGXr5yGlzVz9pnYiA"
+    };
+
+    const powerButton = document.getElementById('power-button');
+    const offScreen = document.getElementById('off-screen');
+    const playerDiv = document.getElementById('player');
+    const channelButtons = document.querySelectorAll('.channel-button');
+
+    let player;
+    let currentChannel = 1;
+    let tvOn = false;
+
+    powerButton.addEventListener('click', () => {
+      if (tvOn) return;
+      tvOn = true;
+      offScreen.classList.add('flicker');
+
+      setTimeout(() => {
+        offScreen.style.display = 'none';
+        playerDiv.style.display = 'block';
+        initPlayer();
+      }, 1000);
+    });
+
+    channelButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const newChannel = parseInt(btn.dataset.channel);
+        if (tvOn && newChannel !== currentChannel) {
+          currentChannel = newChannel;
+          syncAndPlayChannel(currentChannel);
+        }
+      });
+    });
+
+    function initPlayer() {
+      syncAndPlayChannel(currentChannel);
+    }
+
+    async function syncAndPlayChannel(channel) {
+      const playlistId = playlistMap[channel];
+      const apiKey = "AIzaSyDro8dYJKWIxEen07YeMgG7VSBXendxgd0";
+
+      const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${apiKey}`);
+      const data = await response.json();
+
+      const videoIds = data.items.map(item => item.snippet.resourceId.videoId);
+      const videosResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoIds.join(',')}&key=${apiKey}`);
+      const videosData = await videosResponse.json();
+
+      const durations = videosData.items.map(item => ISO8601toSeconds(item.contentDetails.duration));
+      const now = Math.floor(Date.now() / 1000);
+      const totalDuration = durations.reduce((a, b) => a + b, 0);
+      const timeInLoop = now % totalDuration;
+
+      let timeTracker = 0;
+      let videoIndex = 0;
+      let videoStartTime = 0;
+
+      for (let i = 0; i < durations.length; i++) {
+        if (timeTracker + durations[i] > timeInLoop) {
+          videoIndex = i;
+          videoStartTime = timeInLoop - timeTracker;
+          break;
+        }
+        timeTracker += durations[i];
+      }
+
+      const videoId = videoIds[videoIndex];
+
+      if (player) {
+        player.loadVideoById({ videoId, startSeconds: videoStartTime });
+      } else {
+        player = new YT.Player(
