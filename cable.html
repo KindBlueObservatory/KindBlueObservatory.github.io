@@ -137,7 +137,7 @@
 
   <div id="title-block">
     <h1>CABLE</h1>
-    <p>of the Kind Blue Observatory</p>
+    <p>of the Blue Kind Observatory</p>
   </div>
 
   <div id="player-container">
@@ -168,21 +168,24 @@
     let playerInitialized = false;
     let transitioning = false;
     let requestedState = null;
+    let firstPowerOnTriggered = false;
 
     function initiatePowerOn() {
       if (tvOn || transitioning) return;
       transitioning = true;
       requestedState = 'on';
+      firstPowerOnTriggered = true;
       introOverlay.classList.add('hidden');
       syncAndPlayChannel(currentChannel);
     }
 
     introOverlay.addEventListener('click', initiatePowerOn);
     powerToggle.addEventListener('click', () => {
-      if (!playerInitialized || transitioning) return;
+      if (transitioning) return;
 
-      if (!tvOn) {
-        // Start video first, fade after playing
+      if (!tvOn && !firstPowerOnTriggered) {
+        initiatePowerOn();
+      } else if (!tvOn) {
         transitioning = true;
         requestedState = 'on';
         syncAndPlayChannel(currentChannel);
@@ -250,6 +253,7 @@
       if (player) {
         player.loadVideoById({ videoId, startSeconds: videoStartTime });
       } else {
+        const playerContainer = document.getElementById('player');
         player = new YT.Player("player", {
           videoId,
           playerVars: {
@@ -262,7 +266,12 @@
             start: videoStartTime
           },
           events: {
-            onReady: e => e.target.setVolume(100),
+            onReady: e => {
+              e.target.setVolume(100);
+              const iframe = e.target.getIframe();
+              iframe.setAttribute("allowfullscreen", "");
+              iframe.setAttribute("allow", "fullscreen; encrypted-media; picture-in-picture; cast");
+            },
             onStateChange: event => {
               if (event.data === YT.PlayerState.PLAYING && requestedState === 'on') {
                 tvOn = true;
