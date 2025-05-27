@@ -16,6 +16,7 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
+      position: relative;
     }
 
     #title-block {
@@ -68,23 +69,31 @@
     }
 
     #channel-controls {
-      margin-top: 20px;
+      position: absolute;
+      bottom: 30px;
       display: flex;
-      gap: 10px;
+      gap: 40px;
+      font-family: 'Crimson Text', serif;
+      font-style: italic;
+      font-size: 1rem;
     }
 
     .channel-button {
-      padding: 0.5rem 1.2rem;
-      font-size: 1rem;
-      font-family: 'EB Garamond', serif;
-      background: #333;
-      color: white;
-      border: 1px solid #666;
+      background: none;
+      border: none;
+      color: #fff;
       cursor: pointer;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      transition: background 0.2s;
     }
 
     .channel-button:hover {
-      background: #444;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .channel-button.active {
+      color: #aaa;
     }
   </style>
 </head>
@@ -101,7 +110,7 @@
   <div id="player"></div>
 
   <div id="channel-controls">
-    <button class="channel-button" data-channel="1">Channel One</button>
+    <button class="channel-button active" data-channel="1">Channel One</button>
     <button class="channel-button" data-channel="2">Channel Two</button>
   </div>
 
@@ -141,10 +150,18 @@
         const newChannel = parseInt(btn.dataset.channel);
         if (tvOn && newChannel !== currentChannel) {
           currentChannel = newChannel;
+          updateActiveChannelButton(newChannel);
           syncAndPlayChannel(currentChannel);
         }
       });
     });
+
+    function updateActiveChannelButton(activeChannel) {
+      channelButtons.forEach(btn => {
+        const isActive = parseInt(btn.dataset.channel) === activeChannel;
+        btn.classList.toggle('active', isActive);
+      });
+    }
 
     function onYouTubeIframeAPIReady() {
       if (shouldInitOnPower) {
@@ -153,6 +170,7 @@
     }
 
     async function syncAndPlayChannel(channel) {
+      updateActiveChannelButton(channel);
       const playlistId = playlistMap[channel];
       const apiKey = "AIzaSyDro8dYJKWIxEen07YeMgG7VSBXendxgd0";
 
