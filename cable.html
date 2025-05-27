@@ -62,10 +62,18 @@
       height: 100%;
       background: black;
       z-index: 2;
-      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
     }
 
-    .channel-button {
+    #blackout.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .channel-button,
+    #power-toggle {
       position: absolute;
       bottom: 20px;
       font-family: 'EB Garamond', serif;
@@ -73,42 +81,31 @@
       font-size: 0.9rem;
       background: none;
       border: none;
-      color: white;
+      color: #555;
       cursor: pointer;
       padding: 0.3rem 0.6rem;
       letter-spacing: 0.05em;
       text-transform: uppercase;
-      border-radius: 6px;
-      transition: background 0.2s;
+      transition: color 0.2s;
     }
 
-    .channel-button:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .channel-button.active {
-      color: #aaa;
+    .channel-button:hover,
+    #power-toggle:hover {
+      color: #ccc;
     }
 
     .channel-button.left { left: 20px; }
     .channel-button.right { right: 20px; }
 
     #power-toggle {
-      position: absolute;
-      bottom: 20px;
       font-size: 1.2rem;
-      background: none;
-      border: none;
-      color: #555;
-      cursor: pointer;
-      transition: color 0.2s;
       left: 50%;
       transform: translateX(-50%);
       font-family: system-ui, sans-serif;
     }
 
-    #power-toggle:hover {
-      color: #ccc;
+    .channel-button.active {
+      color: #aaa;
     }
   </style>
 </head>
@@ -147,13 +144,13 @@
     powerToggle.addEventListener('click', () => {
       if (!tvOn) {
         tvOn = true;
-        blackout.style.display = 'none';
+        blackout.classList.remove('active');
         if (playerInitialized) {
           syncAndPlayChannel(currentChannel);
         }
       } else {
         tvOn = false;
-        blackout.style.display = 'block';
+        blackout.classList.add('active');
         if (player) {
           player.stopVideo();
         }
