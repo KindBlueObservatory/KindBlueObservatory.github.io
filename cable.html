@@ -49,25 +49,6 @@
       display: none;
     }
 
-    #off-screen {
-      width: 640px;
-      height: 360px;
-      background: black;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    #power-button {
-      font-size: 1.2rem;
-      padding: 1rem 2rem;
-      background: white;
-      color: black;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
     .channel-button {
       position: absolute;
       bottom: 20px;
@@ -119,12 +100,9 @@
 
   <div id="title-block">
     <h1>CABLE</h1>
-    <p>hello , of the Kind Blue Observatory</p>
+    <p>of the Kind Blue Observatory</p>
   </div>
 
-  <div id="off-screen">
-    <button id="power-button">Awaken TV</button>
-  </div>
   <div id="player"></div>
 
   <button class="channel-button left active" data-channel="1">Channel 1</button>
@@ -137,8 +115,6 @@
       2: "PLapU3SOlAXR0piDalGXr5yGlzVz9pnYiA"
     };
 
-    const powerButton = document.getElementById('power-button');
-    const offScreen = document.getElementById('off-screen');
     const playerDiv = document.getElementById('player');
     const channelButtons = document.querySelectorAll('.channel-button');
     const powerToggle = document.getElementById('power-toggle');
@@ -146,19 +122,23 @@
     let player;
     let currentChannel = 1;
     let tvOn = false;
-    let tvDisplayOn = true;
-    let shouldInitOnPower = false;
+    let playerInitialized = false;
 
-    powerButton.addEventListener('click', () => {
-      if (tvOn) return;
-      tvOn = true;
-
-      setTimeout(() => {
-        offScreen.style.display = 'none';
+    powerToggle.addEventListener('click', () => {
+      if (!tvOn) {
+        tvOn = true;
         playerDiv.style.display = 'block';
-        shouldInitOnPower = true;
-        syncAndPlayChannel(currentChannel);
-      }, 1000);
+        if (playerInitialized) {
+          syncAndPlayChannel(currentChannel);
+        }
+        // Otherwise wait for API
+      } else {
+        tvOn = false;
+        playerDiv.style.display = 'none';
+        if (player) {
+          player.stopVideo();
+        }
+      }
     });
 
     channelButtons.forEach(btn => {
@@ -172,18 +152,6 @@
       });
     });
 
-    powerToggle.addEventListener('click', () => {
-      if (!tvOn) return;
-      if (tvDisplayOn) {
-        playerDiv.style.display = 'none';
-        tvDisplayOn = false;
-      } else {
-        playerDiv.style.display = 'block';
-        tvDisplayOn = true;
-        syncAndPlayChannel(currentChannel);
-      }
-    });
-
     function updateActiveChannelButton(activeChannel) {
       channelButtons.forEach(btn => {
         const isActive = parseInt(btn.dataset.channel) === activeChannel;
@@ -192,7 +160,8 @@
     }
 
     function onYouTubeIframeAPIReady() {
-      if (shouldInitOnPower) {
+      playerInitialized = true;
+      if (tvOn) {
         syncAndPlayChannel(currentChannel);
       }
     }
