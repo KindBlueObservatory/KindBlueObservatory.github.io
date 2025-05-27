@@ -113,7 +113,7 @@
 
   <div id="title-block">
     <h1>CABLE</h1>
-    <p>of the Kind Blue Observatory</p>
+    <p>of the Kind Blue Observatory.</p>
   </div>
 
   <div id="player-container">
@@ -140,21 +140,32 @@
     let currentChannel = 1;
     let tvOn = false;
     let playerInitialized = false;
+    let pendingPowerToggle = null;
 
     powerToggle.addEventListener('click', () => {
+      if (pendingPowerToggle) return; // prevent spamming during transition
+
       if (!tvOn) {
         tvOn = true;
         blackout.classList.remove('active');
-        if (playerInitialized) {
-          syncAndPlayChannel(currentChannel);
-        }
+        pendingPowerToggle = 'on';
       } else {
         tvOn = false;
         blackout.classList.add('active');
-        if (player) {
-          player.stopVideo();
-        }
+        pendingPowerToggle = 'off';
       }
+    });
+
+    blackout.addEventListener('transitionend', () => {
+      if (!pendingPowerToggle) return;
+
+      if (pendingPowerToggle === 'off') {
+        if (player) player.stopVideo();
+      } else if (pendingPowerToggle === 'on') {
+        if (playerInitialized) syncAndPlayChannel(currentChannel);
+      }
+
+      pendingPowerToggle = null;
     });
 
     channelButtons.forEach(btn => {
@@ -225,6 +236,7 @@
             modestbranding: 1,
             rel: 0,
             disablekb: 1,
+            fs: 1,
             start: videoStartTime
           },
           events: {
