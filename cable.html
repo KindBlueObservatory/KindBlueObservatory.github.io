@@ -100,7 +100,7 @@
 
   <div id="title-block">
     <h1>CABLE</h1>
-    <p>of the Kind Blue Observatory</p>
+    <p>,, of the Kind Blue Observatory</p>
   </div>
 
   <div id="player"></div>
@@ -131,7 +131,6 @@
         if (playerInitialized) {
           syncAndPlayChannel(currentChannel);
         }
-        // Otherwise wait for API
       } else {
         tvOn = false;
         playerDiv.style.display = 'none';
@@ -205,7 +204,10 @@
           videoId,
           playerVars: {
             autoplay: 1,
-            controls: 1,
+            controls: 0,
+            modestbranding: 1,
+            rel: 0,
+            disablekb: 1,
             start: videoStartTime
           },
           events: {
