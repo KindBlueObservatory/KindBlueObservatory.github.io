@@ -101,6 +101,7 @@
     let player;
     let currentChannel = 1;
     let tvOn = false;
+    let shouldInitOnPower = false;
 
     powerButton.addEventListener('click', () => {
       if (tvOn) return;
@@ -110,7 +111,11 @@
       setTimeout(() => {
         offScreen.style.display = 'none';
         playerDiv.style.display = 'block';
-        initPlayer();
+        shouldInitOnPower = true;
+
+        if (window.YT && YT.Player) {
+          syncAndPlayChannel(currentChannel);
+        }
       }, 1000);
     });
 
@@ -124,8 +129,10 @@
       });
     });
 
-    function initPlayer() {
-      syncAndPlayChannel(currentChannel);
+    function onYouTubeIframeAPIReady() {
+      if (shouldInitOnPower) {
+        syncAndPlayChannel(currentChannel);
+      }
     }
 
     async function syncAndPlayChannel(channel) {
@@ -162,4 +169,35 @@
       if (player) {
         player.loadVideoById({ videoId, startSeconds: videoStartTime });
       } else {
-        player = new YT.Player(
+        player = new YT.Player("player", {
+          videoId,
+          playerVars: {
+            autoplay: 1,
+            controls: 1,
+            start: videoStartTime
+          },
+          events: {
+            onReady: e => e.target.setVolume(100),
+            onStateChange: event => {
+              if (event.data === YT.PlayerState.ENDED) {
+                const nextIndex = (videoIndex + 1) % videoIds.length;
+                player.loadVideoById({ videoId: videoIds[nextIndex], startSeconds: 0 });
+              }
+            }
+          }
+        });
+      }
+    }
+
+    function ISO8601toSeconds(duration) {
+      const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+      const hours = parseInt(match[1]) || 0;
+      const minutes = parseInt(match[2]) || 0;
+      const seconds = parseInt(match[3]) || 0;
+      return hours * 3600 + minutes * 60 + seconds;
+    }
+  </script>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
