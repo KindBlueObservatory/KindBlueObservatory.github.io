@@ -4,10 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KBO Cable</title>
-  <h1 style="font-size: 1.5rem; color: #888; font-weight: normal; margin-bottom: 1rem;">
-  The Kind Blue Observatory Cable
-</h1>
-
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;1,400&family=EB+Garamond:wght@500&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -15,10 +12,34 @@
       color: white;
       font-family: sans-serif;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    #title-block {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      text-align: right;
+      z-index: 5;
+    }
+
+    #title-block h1 {
+      font-family: 'EB Garamond', serif;
+      font-size: 2.2rem;
+      letter-spacing: 0.05em;
+      margin: 0;
+      color: white;
+    }
+
+    #title-block p {
+      font-family: 'Crimson Text', serif;
+      font-size: 1rem;
+      font-style: italic;
+      margin: 0;
+      color: #ccc;
     }
 
     #player {
@@ -53,8 +74,9 @@
     }
 
     .channel-button {
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 1.2rem;
       font-size: 1rem;
+      font-family: 'EB Garamond', serif;
       background: #333;
       color: white;
       border: 1px solid #666;
@@ -64,11 +86,14 @@
     .channel-button:hover {
       background: #444;
     }
-
-
   </style>
 </head>
 <body>
+
+  <div id="title-block">
+    <h1>CABLE</h1>
+    <p>of the Kind Blue Observatory</p>
+  </div>
 
   <div id="off-screen">
     <button id="power-button">Turn On TV</button>
@@ -76,8 +101,8 @@
   <div id="player"></div>
 
   <div id="channel-controls">
-    <button class="channel-button" data-channel="1">Channel 1</button>
-    <button class="channel-button" data-channel="2">Channel 2</button>
+    <button class="channel-button" data-channel="1">Channel One</button>
+    <button class="channel-button" data-channel="2">Channel Two</button>
   </div>
 
   <script>
